@@ -15,6 +15,8 @@
 #include <functional>
 #include <future>
 
+#define PIPELINE_THREADING		1
+
 class TimeSlot
 {
 protected:
@@ -39,16 +41,26 @@ public:
 
 	void wait()
 	{
-		m_promises.resize(m_functors.size());
-
-		for (size_t i = 0; i < m_functors.size(); ++i)
+		if (PIPELINE_THREADING)
 		{
-			m_promises[i] = std::async(std::launch::async, m_functors[i]);
+			m_promises.resize(m_functors.size());
+
+			for (size_t i = 0; i < m_functors.size(); ++i)
+			{
+				m_promises[i] = std::async(std::launch::async, m_functors[i]);
+			}
+
+			for (size_t i = 0; i < m_functors.size(); ++i)
+			{
+				m_promises[i].wait();
+			}
 		}
-
-		for (size_t i = 0; i < m_functors.size(); ++i)
+		else
 		{
-			m_promises[i].wait();
+			for (size_t i = 0; i < m_functors.size(); ++i)
+			{
+				m_functors[i]();
+			}
 		}
 	}
 
