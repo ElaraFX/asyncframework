@@ -117,37 +117,35 @@ void runParallel()
 	});
 	slot0.wait([&]()
 	{
-		TimeSlot slot1;
-		bool needContinue = false;
-		slot1.add([&]()
+		if (GPU.getNewJobs())
 		{
-			CPU.uploadResource2();
-		});
-		slot1.add([&]()
-		{
-			needContinue = GPU.getNewJobs();
 			GPU.computeStep1();
-		});
-		slot1.wait([&]()
-		{
-			if (needContinue)
+			TimeSlot slot1;
+			slot1.add([&]()
+			{
+				GPU.computeStep3();
+			});
+			slot1.add([&]()
+			{
+				CPU.uploadResource1();
+			});
+			slot1.wait([&]()
 			{
 				TimeSlot slot2;
 				slot2.add([&]()
 				{
-					GPU.computeStep3();
-					GPU.computeStep2();
+					CPU.uploadResource2();
 				});
 				slot2.add([&]()
 				{
-					CPU.uploadResource1();
+					GPU.computeStep2();
 				});
 				slot2.wait([&]()
 				{
 					slot0.call();
 				});
-			}
-		});
+			});
+		}
 	});
 }
 
