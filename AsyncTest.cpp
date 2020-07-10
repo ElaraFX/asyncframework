@@ -129,13 +129,13 @@ void runParallel()
 		{
 			GPU.computeStep3();
 		});
-		slot1.add([&]()
+		if (hasNewJobs)
 		{
-			if (hasNewJobs)
+			slot1.add([&]()
 			{
 				CPU.uploadResource1();
-			}
-		});
+			});
+		}
 		slot1.wait([&]()
 		{
 			TimeSlot slot2;
@@ -143,14 +143,14 @@ void runParallel()
 			{
 				CPU.uploadResource2();
 			});
-			slot2.add([&]()
+			if (hasNewJobs)
 			{
-				if (hasNewJobs)
+				slot2.add([&]()
 				{
 					GPU.computeStep2();
 					hasNewJobs = GPU.getNewJobs();
-				}
-			});
+				});
+			}
 			slot2.wait([&]()
 			{
 				if (hasNewJobs)
