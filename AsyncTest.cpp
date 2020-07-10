@@ -104,11 +104,10 @@ void runSerial()
 
 void runParallel()
 {
-	Pipeline pipeline;
 	CPUDevice CPU;
 	GPUDevice GPU;
 
-	TimeSlot & slot0 = pipeline.newTimeSlot();
+	TimeSlot slot0;
 	slot0.add([&]()
 	{
 		GPU.setup();
@@ -118,7 +117,7 @@ void runParallel()
 	});
 	slot0.wait([&]()
 	{
-		TimeSlot & slot1 = pipeline.newTimeSlot();
+		TimeSlot slot1;
 		bool needContinue = false;
 		slot1.add([&]()
 		{
@@ -133,7 +132,7 @@ void runParallel()
 		{
 			if (needContinue)
 			{
-				TimeSlot & slot2 = pipeline.newTimeSlot();
+				TimeSlot slot2;
 				slot2.add([&]()
 				{
 					GPU.computeStep3();

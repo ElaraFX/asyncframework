@@ -77,29 +77,3 @@ public:
 		m_waitFunctor();
 	}
 };
-
-class Pipeline
-{
-protected:
-	std::vector<TimeSlot *> m_timeSlots;
-
-public:
-	Pipeline()
-	{
-	}
-
-	~Pipeline()
-	{
-		for (size_t i = 0; i < m_timeSlots.size(); ++i)
-		{
-			delete m_timeSlots[i];
-		}
-	}
-
-	TimeSlot & newTimeSlot()
-	{
-		TimeSlot *newSlot = new TimeSlot;
-		m_timeSlots.push_back(newSlot);
-		return *newSlot;
-	}
-};
