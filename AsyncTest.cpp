@@ -108,44 +108,57 @@ void runParallel()
 	GPUDevice GPU;
 
 	TimeSlot slot0;
+	bool hasNewJobs = false;
 	slot0.add([&]()
 	{
 		GPU.setup();
 		GPU.computeStep1();
 		CPU.uploadResource1();
 		GPU.computeStep2();
+		hasNewJobs = GPU.getNewJobs();
 	});
 	slot0.wait([&]()
 	{
-		if (GPU.getNewJobs())
+		if (hasNewJobs)
 		{
 			GPU.computeStep1();
-			TimeSlot slot1;
-			slot1.add([&]()
-			{
-				GPU.computeStep3();
-			});
-			slot1.add([&]()
+		}
+
+		TimeSlot slot1;
+		slot1.add([&]()
+		{
+			GPU.computeStep3();
+		});
+		slot1.add([&]()
+		{
+			if (hasNewJobs)
 			{
 				CPU.uploadResource1();
-			});
-			slot1.wait([&]()
+			}
+		});
+		slot1.wait([&]()
+		{
+			TimeSlot slot2;
+			slot2.add([&]()
 			{
-				TimeSlot slot2;
-				slot2.add([&]()
-				{
-					CPU.uploadResource2();
-				});
-				slot2.add([&]()
+				CPU.uploadResource2();
+			});
+			slot2.add([&]()
+			{
+				if (hasNewJobs)
 				{
 					GPU.computeStep2();
-				});
-				slot2.wait([&]()
+					hasNewJobs = GPU.getNewJobs();
+				}
+			});
+			slot2.wait([&]()
+			{
+				if (hasNewJobs)
 				{
 					slot0.call();
-				});
+				}
 			});
-		}
+		});
 	});
 }
 
