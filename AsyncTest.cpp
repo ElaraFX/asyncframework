@@ -143,7 +143,8 @@ void runParallel()
 			{
 				CPU.uploadResource2();
 			});
-			if (hasNewJobs)
+			bool oldHasNewJobs = hasNewJobs;
+			if (oldHasNewJobs)
 			{
 				slot2.add([&]()
 				{
@@ -153,7 +154,7 @@ void runParallel()
 			}
 			slot2.wait([&]()
 			{
-				if (hasNewJobs)
+				if (oldHasNewJobs)
 				{
 					slot0.call();
 				}
